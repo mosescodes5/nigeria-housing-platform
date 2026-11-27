@@ -1,0 +1,351 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  TENANT
+  BUYER
+  LANDLORD
+  AGENT
+  ADMIN
+  SUPPORT
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  DUPLEX
+  BUNGALOW
+  STUDIO
+  OTHER
+}
+
+enum ListingStatus {
+  DRAFT
+  SUBMITTED
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum ContributionFrequency {
+  WEEKLY
+  MONTHLY
+}
+
+enum SavingsGoalStatus {
+  DRAFT
+  ACTIVE
+  PAYMENT_PENDING
+  GOAL_COMPLETED
+  SETTLEMENT_PENDING
+  SETTLED
+  PAUSED
+  CANCELLED
+  WITHDRAWAL_PENDING
+  REFUND_PENDING
+  DISPUTED
+}
+
+enum ContributionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REVERSED
+  REFUNDED
+  DISPUTED
+}
+
+enum ViewingStatus {
+  REQUESTED
+  CONFIRMED
+  DECLINED
+  CANCELLED
+}
+
+enum LedgerAccountType {
+  ASSET
+  LIABILITY
+  REVENUE
+  EXPENSE
+}
+
+enum EntryDirection {
+  DEBIT
+  CREDIT
+}
+
+enum LegalDocStatus {
+  DRAFT
+  UNDER_LEGAL_REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ConsentKind {
+  TERMS
+  PRIVACY_NOTICE
+  MARKETING
+  RENT_SAVINGS_AGREEMENT
+  LANDLORD_AGREEMENT
+  AGENT_AGREEMENT
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  phone        String?    @unique
+  passwordHash String
+  fullName     String
+  role         Role       @default(TENANT)
+  status       UserStatus @default(PENDING_VERIFICATION)
+  mfaEnabled   Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  properties   Property[]
+  savingsGoals SavingsGoal[]
+  consents     ConsentRecord[]
+  auditLogs    AuditLog[]
+  ledgerAccounts LedgerAccount[]
+  sessions     Session[]
+  favourites   Favourite[]
+  enquiries    Enquiry[]
+  viewingRequests ViewingRequest[]
+}
+
+model Property {
+  id                 String             @id @default(cuid())
+  slug               String             @unique
+  ownerId            String
+  owner              User               @relation(fields: [ownerId], references: [id])
+  title              String
+  description        String
+  state              String
+  city               String
+  neighbourhood      String?
+  type               PropertyType
+  annualRentKobo     BigInt
+  bedrooms           Int
+  bathrooms          Int
+  listingStatus      ListingStatus      @default(DRAFT)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  // Distinguishes platform-verified facts from owner-supplied claims.
+  verificationScope  String?
+  available          Boolean            @default(true)
+  features           String[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  images       PropertyImage[]
+  savingsGoals SavingsGoal[]
+  favourites   Favourite[]
+  enquiries    Enquiry[]
+  viewings     ViewingRequest[]
+
+  @@index([city, neighbourhood])
+  @@index([listingStatus, verificationStatus])
+  @@index([annualRentKobo])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  storageKey String
+  altText    String
+  position   Int      @default(0)
+
+  @@index([propertyId, position])
+}
+
+model SavingsGoal {
+  id          String                @id @default(cuid())
+  userId      String
+  user        User                  @relation(fields: [userId], references: [id])
+  // A savings goal never reserves a property. Reservation is a separate, landlord-accepted flow.
+  propertyId  String?
+  property    Property?             @relation(fields: [propertyId], references: [id])
+  targetKobo  BigInt
+  targetDate  DateTime
+  frequency   ContributionFrequency
+  status      SavingsGoalStatus     @default(DRAFT)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  contributions Contribution[]
+
+  @@index([userId, status])
+}
+
+model Contribution {
+  id                String             @id @default(cuid())
+  goalId            String
+  goal              SavingsGoal        @relation(fields: [goalId], references: [id])
+  amountKobo        BigInt
+  status            ContributionStatus @default(PENDING)
+  providerReference String             @unique
+  idempotencyKey    String             @unique
+  confirmedAt       DateTime?
+  createdAt         DateTime           @default(now())
+
+  @@index([goalId, status])
+}
+
+model LedgerAccount {
+  id      String            @id @default(cuid())
+  code    String            @unique
+  name    String
+  type    LedgerAccountType
+  userId  String?
+  user    User?             @relation(fields: [userId], references: [id])
+  entries LedgerEntry[]
+}
+
+model LedgerTransaction {
+  id          String        @id @default(cuid())
+  reference   String        @unique
+  description String
+  createdAt   DateTime      @default(now())
+  entries     LedgerEntry[]
+}
+
+// Append-only. Corrections are made with reversing transactions, never updates or deletes.
+// The migration must add: CHECK ("amountKobo" > 0). See docs/ARCHITECTURE.md.
+model LedgerEntry {
+  id            String            @id @default(cuid())
+  transactionId String
+  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id])
+  accountId     String
+  account       LedgerAccount     @relation(fields: [accountId], references: [id])
+  direction     EntryDirection
+  amountKobo    BigInt
+  createdAt     DateTime          @default(now())
+
+  @@index([transactionId])
+  @@index([accountId, createdAt])
+}
+
+model LegalDocument {
+  id       String                 @id @default(cuid())
+  slug     String                 @unique
+  title    String
+  internal Boolean                @default(false)
+  versions LegalDocumentVersion[]
+}
+
+model LegalDocumentVersion {
+  id            String         @id @default(cuid())
+  documentId    String
+  document      LegalDocument  @relation(fields: [documentId], references: [id])
+  version       Int
+  status        LegalDocStatus @default(DRAFT)
+  contentMd     String
+  effectiveDate DateTime?
+  approvedById  String?
+  publishedAt   DateTime?
+  createdAt     DateTime       @default(now())
+
+  consents ConsentRecord[]
+
+  @@unique([documentId, version])
+}
+
+model ConsentRecord {
+  id          String               @id @default(cuid())
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id])
+  versionId   String
+  version     LegalDocumentVersion @relation(fields: [versionId], references: [id])
+  kind        ConsentKind
+  grantedAt   DateTime             @default(now())
+  withdrawnAt DateTime?
+
+  @@index([userId, kind])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorId, createdAt])
+}
+
+// Server-side sessions. Only a SHA-256 hash of the token is stored; the raw token lives in an httpOnly cookie.
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Favourite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([propertyId])
+}
+
+model Enquiry {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  message    String
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([propertyId, createdAt])
+}
+
+model ViewingRequest {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  propertyId  String
+  property    Property      @relation(fields: [propertyId], references: [id])
+  preferredAt DateTime
+  note        String?
+  status      ViewingStatus @default(REQUESTED)
+  createdAt   DateTime      @default(now())
+
+  @@index([userId, createdAt])
+  @@index([propertyId, status])
+}

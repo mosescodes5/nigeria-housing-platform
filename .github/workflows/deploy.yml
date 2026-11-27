@@ -1,0 +1,41 @@
+name: Deploy
+
+# Runs only after CI succeeds on develop (staging) or main (production).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  staging:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency: deploy-staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Deploy to staging
+        env:
+          DEPLOY_PROVIDER: ${{ vars.DEPLOY_PROVIDER }}
+        run: ./scripts/deploy.sh staging
+
+  production:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    # Configure required reviewers on this GitHub Environment for manual approval.
+    environment: production
+    concurrency: deploy-production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Deploy to production
+        env:
+          DEPLOY_PROVIDER: ${{ vars.DEPLOY_PROVIDER }}
+        run: ./scripts/deploy.sh production

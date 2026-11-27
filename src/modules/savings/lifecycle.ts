@@ -1,0 +1,52 @@
+export type GoalStatus =
+  | "DRAFT"
+  | "ACTIVE"
+  | "PAYMENT_PENDING"
+  | "GOAL_COMPLETED"
+  | "SETTLEMENT_PENDING"
+  | "SETTLED"
+  | "PAUSED"
+  | "CANCELLED"
+  | "WITHDRAWAL_PENDING"
+  | "REFUND_PENDING"
+  | "DISPUTED";
+
+const TRANSITIONS: Record<GoalStatus, readonly GoalStatus[]> = {
+  DRAFT: ["ACTIVE", "CANCELLED"],
+  ACTIVE: [
+    "PAYMENT_PENDING",
+    "GOAL_COMPLETED",
+    "PAUSED",
+    "CANCELLED",
+    "WITHDRAWAL_PENDING",
+    "REFUND_PENDING",
+    "DISPUTED",
+  ],
+  PAYMENT_PENDING: ["ACTIVE", "DISPUTED"],
+  PAUSED: ["ACTIVE", "CANCELLED", "WITHDRAWAL_PENDING", "REFUND_PENDING"],
+  GOAL_COMPLETED: ["SETTLEMENT_PENDING", "WITHDRAWAL_PENDING", "REFUND_PENDING"],
+  SETTLEMENT_PENDING: ["SETTLED", "GOAL_COMPLETED", "DISPUTED"],
+  SETTLED: [],
+  CANCELLED: [],
+  WITHDRAWAL_PENDING: ["ACTIVE", "CANCELLED", "DISPUTED"],
+  REFUND_PENDING: ["CANCELLED", "DISPUTED"],
+  DISPUTED: ["ACTIVE", "CANCELLED", "REFUND_PENDING"],
+};
+
+export function canTransition(from: GoalStatus, to: GoalStatus): boolean {
+  return TRANSITIONS[from].includes(to);
+}
+
+export const GOAL_STATUS_LABEL: Record<GoalStatus, string> = {
+  DRAFT: "Draft",
+  ACTIVE: "Active",
+  PAYMENT_PENDING: "Payment pending",
+  GOAL_COMPLETED: "Goal completed",
+  SETTLEMENT_PENDING: "Settlement pending",
+  SETTLED: "Settled",
+  PAUSED: "Paused",
+  CANCELLED: "Cancelled",
+  WITHDRAWAL_PENDING: "Withdrawal pending",
+  REFUND_PENDING: "Refund pending",
+  DISPUTED: "Disputed",
+};

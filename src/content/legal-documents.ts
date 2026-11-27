@@ -1,0 +1,31 @@
+/** Public legal document register. Content is NOT yet written or reviewed by Nigerian counsel. */
+export const LEGAL_DOCUMENTS: { slug: string; title: string }[] = [
+  { slug: "terms-and-conditions", title: "Terms and Conditions" },
+  { slug: "privacy-policy", title: "Privacy Policy" },
+  { slug: "cookie-policy", title: "Cookie Policy" },
+  { slug: "data-protection-notice", title: "Data Protection Notice" },
+  { slug: "user-agreement", title: "User Agreement" },
+  { slug: "property-listing-terms", title: "Property Listing Terms" },
+  { slug: "landlord-agreement", title: "Landlord Agreement" },
+  { slug: "agent-agreement", title: "Agent Agreement" },
+  { slug: "rent-savings-agreement", title: "Rent Savings Agreement" },
+  { slug: "payment-and-settlement-terms", title: "Payment and Settlement Terms" },
+  { slug: "refund-policy", title: "Refund Policy" },
+  { slug: "cancellation-policy", title: "Cancellation Policy" },
+  { slug: "property-reservation-policy", title: "Property Reservation Policy" },
+  {
+    slug: "complaints-and-dispute-resolution-policy",
+    title: "Complaints and Dispute Resolution Policy",
+  },
+  { slug: "financial-services-disclosure", title: "Financial Services Disclosure" },
+  {
+    slug: "third-party-payment-provider-disclosure",
+    title: "Third-Party Payment Provider Disclosure",
+  },
+  { slug: "rent-financing-disclosure", title: "Rent Financing Disclosure" },
+  { slug: "mortgage-referral-disclosure", title: "Mortgage Referral Disclosure" },
+  { slug: "property-verification-disclaimer", title: "Property Verification Disclaimer" },
+  { slug: "acceptable-use-policy", title: "Acceptable Use Policy" },
+  { slug: "website-disclaimer", title: "Website Disclaimer" },
+  { slug: "intellectual-property-policy", title: "Intellectual Property Policy" },
+];
