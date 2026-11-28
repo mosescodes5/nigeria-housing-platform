@@ -21,9 +21,9 @@ describe("assertBalanced", () => {
   });
 
   it("rejects single-entry and non-positive entries", () => {
-    expect(() =>
-      assertBalanced([{ accountCode: "A", direction: "DEBIT", amountKobo: 1n }]),
-    ).toThrow(LedgerError);
+    expect(() => assertBalanced([{ accountCode: "A", direction: "DEBIT", amountKobo: 1n }])).toThrow(
+      LedgerError,
+    );
     expect(() =>
       assertBalanced([
         { accountCode: "A", direction: "DEBIT", amountKobo: 0n },

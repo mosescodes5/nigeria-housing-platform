@@ -29,13 +29,7 @@ export function Field({
   );
 }
 
-export function SubmitButton({
-  pending,
-  children,
-}: {
-  pending: boolean;
-  children: React.ReactNode;
-}) {
+export function SubmitButton({ pending, children }: { pending: boolean; children: React.ReactNode }) {
   return (
     <button
       type="submit"

@@ -13,10 +13,7 @@ export default async function LoginPage() {
       <LoginForm />
       <p className="text-sm text-muted">
         New here?{" "}
-        <Link
-          href="/register"
-          className="font-medium text-emerald underline-offset-4 hover:underline"
-        >
+        <Link href="/register" className="font-medium text-emerald underline-offset-4 hover:underline">
           Create an account
         </Link>
       </p>

@@ -16,12 +16,7 @@ export function PropertyArt({ seed }: { seed: number }) {
   const [a, b] = PALETTES[seed % PALETTES.length]!;
   const id = `art-${seed}`;
   return (
-    <svg
-      viewBox="0 0 400 260"
-      role="img"
-      aria-label="Illustration of a residential building"
-      className="h-full w-full"
-    >
+    <svg viewBox="0 0 400 260" role="img" aria-label="Illustration of a residential building" className="h-full w-full">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor={a} />

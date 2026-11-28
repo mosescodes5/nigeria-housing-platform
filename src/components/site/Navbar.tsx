@@ -28,15 +28,10 @@ export function Navbar() {
   return (
     <header
       className={`sticky top-0 z-40 transition-all duration-300 ${
-        scrolled
-          ? "border-b border-line bg-surface/80 shadow-soft backdrop-blur-md"
-          : "bg-transparent"
+        scrolled ? "border-b border-line bg-surface/80 shadow-soft backdrop-blur-md" : "bg-transparent"
       }`}
     >
-      <nav
-        aria-label="Main"
-        className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4"
-      >
+      <nav aria-label="Main" className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2 font-display text-lg font-bold text-navy">
           <span className="flex h-9 w-9 items-center justify-center rounded-control bg-navy text-white">
             <HomeIcon className="h-5 w-5" />
@@ -91,29 +86,17 @@ export function Navbar() {
             <ul className="flex flex-col gap-1 py-3 text-base font-medium">
               {LINKS.map((l) => (
                 <li key={l.href}>
-                  <Link
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-control px-3 py-3 hover:bg-card"
-                  >
+                  <Link href={l.href} onClick={() => setOpen(false)} className="block rounded-control px-3 py-3 hover:bg-card">
                     {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
             <div className="flex gap-3">
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="flex-1 rounded-control border border-line bg-card py-3 text-center font-medium"
-              >
+              <Link href="/login" onClick={() => setOpen(false)} className="flex-1 rounded-control border border-line bg-card py-3 text-center font-medium">
                 Sign In
               </Link>
-              <Link
-                href="/register"
-                onClick={() => setOpen(false)}
-                className="flex-1 rounded-control bg-navy py-3 text-center font-semibold text-white"
-              >
+              <Link href="/register" onClick={() => setOpen(false)} className="flex-1 rounded-control bg-navy py-3 text-center font-semibold text-white">
                 Get Started
               </Link>
             </div>

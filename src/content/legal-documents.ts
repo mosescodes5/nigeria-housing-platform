@@ -13,15 +13,9 @@ export const LEGAL_DOCUMENTS: { slug: string; title: string }[] = [
   { slug: "refund-policy", title: "Refund Policy" },
   { slug: "cancellation-policy", title: "Cancellation Policy" },
   { slug: "property-reservation-policy", title: "Property Reservation Policy" },
-  {
-    slug: "complaints-and-dispute-resolution-policy",
-    title: "Complaints and Dispute Resolution Policy",
-  },
+  { slug: "complaints-and-dispute-resolution-policy", title: "Complaints and Dispute Resolution Policy" },
   { slug: "financial-services-disclosure", title: "Financial Services Disclosure" },
-  {
-    slug: "third-party-payment-provider-disclosure",
-    title: "Third-Party Payment Provider Disclosure",
-  },
+  { slug: "third-party-payment-provider-disclosure", title: "Third-Party Payment Provider Disclosure" },
   { slug: "rent-financing-disclosure", title: "Rent Financing Disclosure" },
   { slug: "mortgage-referral-disclosure", title: "Mortgage Referral Disclosure" },
   { slug: "property-verification-disclaimer", title: "Property Verification Disclaimer" },

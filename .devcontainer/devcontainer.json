@@ -1,0 +1,14 @@
+{
+  "name": "Nigeria Housing Platform",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/nigeria-housing-platform",
+  "forwardPorts": [3000],
+  "portsAttributes": { "3000": { "label": "Web app", "onAutoForward": "notify" } },
+  "postCreateCommand": "cp -n .env.example .env && npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "Prisma.prisma"]
+    }
+  }
+}

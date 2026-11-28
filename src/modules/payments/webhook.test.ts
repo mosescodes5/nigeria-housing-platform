@@ -17,8 +17,6 @@ describe("webhook signature verification", () => {
   });
   it("validates event payloads", () => {
     expect(webhookEventSchema.safeParse(JSON.parse(body)).success).toBe(true);
-    expect(webhookEventSchema.safeParse({ event: "charge.unknown", reference: "x" }).success).toBe(
-      false,
-    );
+    expect(webhookEventSchema.safeParse({ event: "charge.unknown", reference: "x" }).success).toBe(false);
   });
 });

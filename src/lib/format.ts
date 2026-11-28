@@ -4,19 +4,9 @@ import { formatNaira } from "@/modules/ledger/ledger";
 export const formatNairaShort = (kobo: bigint) => formatNaira(kobo).replace(/\.00$/, "");
 
 export const formatDate = (d: Date) =>
-  new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "Africa/Lagos",
-  }).format(d);
+  new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Lagos" }).format(d);
 
 export const formatDateTime = (d: Date) =>
   new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Africa/Lagos",
+    day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Lagos",
   }).format(d);

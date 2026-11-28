@@ -13,13 +13,7 @@ export function SavingsCalculator() {
 
   const result = useMemo(() => {
     try {
-      return {
-        plan: calculateSavingsPlan({
-          targetNaira: Number(target),
-          months: Number(months),
-          frequency,
-        }),
-      };
+      return { plan: calculateSavingsPlan({ targetNaira: Number(target), months: Number(months), frequency }) };
     } catch (e) {
       return { error: e instanceof RangeError ? e.message : "Check your inputs" };
     }
@@ -32,53 +26,26 @@ export function SavingsCalculator() {
     <div className="grid gap-8 rounded-card border border-line bg-card p-6 shadow-soft md:grid-cols-2 md:p-8">
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <label htmlFor="calc-target" className="text-sm font-medium">
-            Target rent (₦)
-          </label>
-          <input
-            id="calc-target"
-            inputMode="numeric"
-            value={target}
-            onChange={(e) => setTarget(e.target.value.replace(/\D/g, ""))}
-            className={inputClass}
-          />
+          <label htmlFor="calc-target" className="text-sm font-medium">Target rent (₦)</label>
+          <input id="calc-target" inputMode="numeric" value={target} onChange={(e) => setTarget(e.target.value.replace(/\D/g, ""))} className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="calc-months" className="text-sm font-medium">
-            Savings duration (months)
-          </label>
-          <input
-            id="calc-months"
-            inputMode="numeric"
-            value={months}
-            onChange={(e) => setMonths(e.target.value.replace(/\D/g, ""))}
-            className={inputClass}
-          />
+          <label htmlFor="calc-months" className="text-sm font-medium">Savings duration (months)</label>
+          <input id="calc-months" inputMode="numeric" value={months} onChange={(e) => setMonths(e.target.value.replace(/\D/g, ""))} className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="calc-frequency" className="text-sm font-medium">
-            Contribution frequency
-          </label>
-          <select
-            id="calc-frequency"
-            value={frequency}
-            onChange={(e) => setFrequency(e.target.value as Frequency)}
-            className={inputClass}
-          >
+          <label htmlFor="calc-frequency" className="text-sm font-medium">Contribution frequency</label>
+          <select id="calc-frequency" value={frequency} onChange={(e) => setFrequency(e.target.value as Frequency)} className={inputClass}>
             <option value="MONTHLY">Monthly</option>
             <option value="WEEKLY">Weekly</option>
           </select>
         </div>
         <p className="text-xs text-muted">
-          Supported: ₦{LIMITS.minTargetNaira.toLocaleString("en-NG")} to ₦
-          {LIMITS.maxTargetNaira.toLocaleString("en-NG")}, up to {LIMITS.maxMonths} months.
+          Supported: ₦{LIMITS.minTargetNaira.toLocaleString("en-NG")} to ₦{LIMITS.maxTargetNaira.toLocaleString("en-NG")}, up to {LIMITS.maxMonths} months.
         </p>
       </div>
 
-      <div
-        className="flex flex-col justify-between gap-6 rounded-panel bg-surface p-6"
-        aria-live="polite"
-      >
+      <div className="flex flex-col justify-between gap-6 rounded-panel bg-surface p-6" aria-live="polite">
         {"plan" in result && result.plan ? (
           <>
             <div>
@@ -92,22 +59,14 @@ export function SavingsCalculator() {
               </p>
             </div>
             <div className="space-y-2">
-              <ProgressBar
-                percent={100 / result.plan.periods}
-                label="Progress after the first contribution"
-              />
-              <p className="text-xs text-muted">
-                Illustration: progress after your first contribution is confirmed.
-              </p>
+              <ProgressBar percent={100 / result.plan.periods} label="Progress after the first contribution" />
+              <p className="text-xs text-muted">Illustration: progress after your first contribution is confirmed.</p>
             </div>
           </>
         ) : (
           <p className="text-sm text-red-600">{"error" in result ? result.error : ""}</p>
         )}
-        <Link
-          href="/register"
-          className="rounded-control bg-emerald px-5 py-3 text-center font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-95"
-        >
+        <Link href="/register" className="rounded-control bg-emerald px-5 py-3 text-center font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-95">
           Start saving
         </Link>
       </div>

@@ -7,30 +7,16 @@ export function Footer() {
         <div className="md:col-span-2">
           <p className="font-display text-lg font-bold text-navy">Housing Platform</p>
           <p className="mt-3 max-w-md text-sm text-muted">
-            Property discovery and structured rent savings for Nigeria. We are a technology
-            platform. Any regulated financial services are provided by authorised partners.
+            Property discovery and structured rent savings for Nigeria. We are a technology platform.
+            Any regulated financial services are provided by authorised partners.
           </p>
         </div>
-        <FooterColumn
-          title="Platform"
-          links={[
-            ["Explore Properties", "/properties"],
-            ["How It Works", "/#how-it-works"],
-            ["Rent Savings", "/#rent-savings"],
-          ]}
-        />
-        <FooterColumn
-          title="Company"
-          links={[
-            ["About Us", "/about"],
-            ["Contact", "/contact"],
-            ["Legal & Compliance", "/legal"],
-          ]}
-        />
+        <FooterColumn title="Platform" links={[["Explore Properties", "/properties"], ["How It Works", "/#how-it-works"], ["Rent Savings", "/#rent-savings"]]} />
+        <FooterColumn title="Company" links={[["About Us", "/about"], ["Contact", "/contact"], ["Legal & Compliance", "/legal"]]} />
       </div>
       <div className="border-t border-line px-6 py-6 text-center text-xs text-muted">
-        Rent savings deposits, financing and mortgage services are not yet available. Figures and
-        listings marked as demonstration data are illustrative only.
+        Rent savings deposits, financing and mortgage services are not yet available. Figures and listings
+        marked as demonstration data are illustrative only.
       </div>
     </footer>
   );

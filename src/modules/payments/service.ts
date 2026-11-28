@@ -10,10 +10,7 @@ import {
 } from "@/modules/ledger/ledger";
 
 export class PaymentError extends Error {
-  constructor(
-    public code: "NOT_FOUND" | "INVALID_STATE" | "DISABLED",
-    message: string,
-  ) {
+  constructor(public code: "NOT_FOUND" | "INVALID_STATE" | "DISABLED", message: string) {
     super(message);
   }
 }
@@ -32,11 +29,7 @@ async function ensureAccount(
   type: "ASSET" | "LIABILITY",
   userId?: string,
 ) {
-  return tx.ledgerAccount.upsert({
-    where: { code },
-    update: {},
-    create: { code, name, type, userId },
-  });
+  return tx.ledgerAccount.upsert({ where: { code }, update: {}, create: { code, name, type, userId } });
 }
 
 /** Validates, then writes a balanced transaction. The unique reference makes double-posting impossible. */
@@ -45,12 +38,7 @@ async function postLedger(
   input: { reference: string; description: string; entries: EntryInput[]; userId: string },
 ) {
   assertBalanced(input.entries);
-  const clearing = await ensureAccount(
-    tx,
-    PARTNER_CLEARING_CODE,
-    "Funds held at payment partner",
-    "ASSET",
-  );
+  const clearing = await ensureAccount(tx, PARTNER_CLEARING_CODE, "Funds held at payment partner", "ASSET");
   const customer = await ensureAccount(
     tx,
     customerSavingsCode(input.userId),
@@ -75,10 +63,7 @@ async function postLedger(
 }
 
 async function loadContribution(tx: Prisma.TransactionClient, providerReference: string) {
-  const c = await tx.contribution.findUnique({
-    where: { providerReference },
-    include: { goal: true },
-  });
+  const c = await tx.contribution.findUnique({ where: { providerReference }, include: { goal: true } });
   if (!c) throw new PaymentError("NOT_FOUND", "Unknown payment reference");
   return c;
 }
@@ -88,8 +73,7 @@ export async function confirmContribution(providerReference: string): Promise<Pr
   return db.$transaction(async (tx) => {
     const c = await loadContribution(tx, providerReference);
     if (c.status === "CONFIRMED") return "already_processed";
-    if (c.status !== "PENDING")
-      throw new PaymentError("INVALID_STATE", `Cannot confirm a ${c.status} contribution`);
+    if (c.status !== "PENDING") throw new PaymentError("INVALID_STATE", `Cannot confirm a ${c.status} contribution`);
 
     const claimed = await tx.contribution.updateMany({
       where: { id: c.id, status: "PENDING" },
@@ -107,9 +91,7 @@ export async function confirmContribution(providerReference: string): Promise<Pr
         { accountCode: customerSavingsCode(userId), direction: "CREDIT", amountKobo: c.amountKobo },
       ],
     });
-    await tx.auditLog.create({
-      data: { action: "payment.confirmed", entity: "Contribution", entityId: c.id },
-    });
+    await tx.auditLog.create({ data: { action: "payment.confirmed", entity: "Contribution", entityId: c.id } });
     return "processed";
   });
 }
@@ -118,16 +100,10 @@ export async function failContribution(providerReference: string): Promise<Proce
   return db.$transaction(async (tx) => {
     const c = await loadContribution(tx, providerReference);
     if (c.status === "FAILED") return "already_processed";
-    if (c.status !== "PENDING")
-      throw new PaymentError("INVALID_STATE", `Cannot fail a ${c.status} contribution`);
-    const claimed = await tx.contribution.updateMany({
-      where: { id: c.id, status: "PENDING" },
-      data: { status: "FAILED" },
-    });
+    if (c.status !== "PENDING") throw new PaymentError("INVALID_STATE", `Cannot fail a ${c.status} contribution`);
+    const claimed = await tx.contribution.updateMany({ where: { id: c.id, status: "PENDING" }, data: { status: "FAILED" } });
     if (claimed.count === 0) return "already_processed";
-    await tx.auditLog.create({
-      data: { action: "payment.failed", entity: "Contribution", entityId: c.id },
-    });
+    await tx.auditLog.create({ data: { action: "payment.failed", entity: "Contribution", entityId: c.id } });
     return "processed";
   });
 }
@@ -137,12 +113,8 @@ export async function reverseContribution(providerReference: string): Promise<Pr
   return db.$transaction(async (tx) => {
     const c = await loadContribution(tx, providerReference);
     if (c.status === "REVERSED") return "already_processed";
-    if (c.status !== "CONFIRMED")
-      throw new PaymentError("INVALID_STATE", `Cannot reverse a ${c.status} contribution`);
-    const claimed = await tx.contribution.updateMany({
-      where: { id: c.id, status: "CONFIRMED" },
-      data: { status: "REVERSED" },
-    });
+    if (c.status !== "CONFIRMED") throw new PaymentError("INVALID_STATE", `Cannot reverse a ${c.status} contribution`);
+    const claimed = await tx.contribution.updateMany({ where: { id: c.id, status: "CONFIRMED" }, data: { status: "REVERSED" } });
     if (claimed.count === 0) return "already_processed";
 
     const userId = c.goal.userId;
@@ -155,9 +127,7 @@ export async function reverseContribution(providerReference: string): Promise<Pr
         { accountCode: PARTNER_CLEARING_CODE, direction: "CREDIT", amountKobo: c.amountKobo },
       ],
     });
-    await tx.auditLog.create({
-      data: { action: "payment.reversed", entity: "Contribution", entityId: c.id },
-    });
+    await tx.auditLog.create({ data: { action: "payment.reversed", entity: "Contribution", entityId: c.id } });
     return "processed";
   });
 }
@@ -169,14 +139,10 @@ export async function createSandboxDeposit(input: {
   amountNaira: number;
   idempotencyKey: string;
 }): Promise<void> {
-  if (!isSandboxEnabled())
-    throw new PaymentError("DISABLED", "Sandbox deposits are not available here");
-  const goal = await db.savingsGoal.findFirst({
-    where: { id: input.goalId, userId: input.userId },
-  });
+  if (!isSandboxEnabled()) throw new PaymentError("DISABLED", "Sandbox deposits are not available here");
+  const goal = await db.savingsGoal.findFirst({ where: { id: input.goalId, userId: input.userId } });
   if (!goal) throw new PaymentError("NOT_FOUND", "Savings goal not found");
-  if (goal.status !== "ACTIVE")
-    throw new PaymentError("INVALID_STATE", "The goal must be active to deposit");
+  if (goal.status !== "ACTIVE") throw new PaymentError("INVALID_STATE", "The goal must be active to deposit");
   try {
     await db.contribution.create({
       data: {

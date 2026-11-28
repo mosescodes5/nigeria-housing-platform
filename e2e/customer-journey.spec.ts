@@ -1,9 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
 
-test("tenant registers, creates a goal, and sandbox money counts only once confirmed", async ({
-  page,
-}) => {
+test("tenant registers, creates a goal, and sandbox money counts only once confirmed", async ({ page }) => {
   const email = `e2e-${randomUUID()}@example.test`;
 
   await page.goto("/register");

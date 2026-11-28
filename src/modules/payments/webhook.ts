@@ -6,11 +6,7 @@ export function signPayload(body: string, secret: string): string {
 }
 
 /** Constant-time HMAC-SHA256 check of the raw request body. */
-export function verifySignature(
-  body: string,
-  signature: string | null | undefined,
-  secret: string | undefined,
-): boolean {
+export function verifySignature(body: string, signature: string | null | undefined, secret: string | undefined): boolean {
   if (!signature || !secret) return false;
   if (!/^[0-9a-f]{64}$/i.test(signature)) return false;
   const expected = Buffer.from(signPayload(body, secret), "hex");

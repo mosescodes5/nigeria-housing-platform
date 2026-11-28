@@ -10,6 +10,13 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DEMO_PROPERTIES } from "../src/content/demo-properties";
 
+// Make `npm run db:seed` work without exporting variables by hand (Node 20.12+).
+try {
+  process.loadEnvFile();
+} catch {
+  // no .env file: rely on the real environment
+}
+
 const db = new PrismaClient();
 
 async function seedAdmin() {
@@ -33,10 +40,54 @@ async function seedAdmin() {
   console.log("Administrator created.");
 }
 
+const DEMO_PASSWORD = "DemoPass-12345";
+
+/** Throwaway logins for exploring the app locally. Created only when APP_ENV is local or test. */
+async function seedDemoAccounts() {
+  if (process.env.APP_ENV !== "local" && process.env.APP_ENV !== "test") {
+    console.log("Skipped demo login accounts: they are created only when APP_ENV is local or test.");
+    return;
+  }
+  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
+  const make = (email: string, fullName: string, role: "TENANT" | "LANDLORD" | "ADMIN") =>
+    db.user.upsert({ where: { email }, update: {}, create: { email, fullName, role, passwordHash, status: "ACTIVE" } });
+
+  const tenant = await make("tenant@example.test", "Demo Tenant", "TENANT");
+  const landlord = await make("landlord@example.test", "Demo Landlord", "LANDLORD");
+  await make("admin@example.test", "Demo Administrator", "ADMIN");
+
+  await db.businessProfile.upsert({
+    where: { userId: landlord.id },
+    update: {},
+    create: { userId: landlord.id, businessName: "Demo Homes", type: "INDIVIDUAL_LANDLORD", address: "1 Demo Street, Lagos", status: "VERIFIED" },
+  });
+  const agreement = await db.legalDocumentVersion.findFirst({ where: { status: "PUBLISHED", document: { slug: "landlord-agreement" } } });
+  if (agreement && !(await db.consentRecord.findFirst({ where: { userId: landlord.id, kind: "LANDLORD_AGREEMENT" } }))) {
+    await db.consentRecord.create({ data: { userId: landlord.id, versionId: agreement.id, kind: "LANDLORD_AGREEMENT" } });
+  }
+
+  if (!(await db.savingsGoal.findFirst({ where: { userId: tenant.id } }))) {
+    const now = new Date();
+    await db.savingsGoal.create({
+      data: {
+        userId: tenant.id,
+        targetKobo: 300_000_000n,
+        targetDate: new Date(Date.UTC(now.getUTCFullYear() + 1, now.getUTCMonth(), now.getUTCDate())),
+        frequency: "MONTHLY",
+        status: "ACTIVE",
+      },
+    });
+  }
+
+  console.log("\nDemo logins (local/test only, password for all: " + DEMO_PASSWORD + "):");
+  console.log("  tenant@example.test    customer dashboard and savings");
+  console.log("  landlord@example.test  partner portal (business already verified)");
+  console.log("  admin@example.test     administration and moderation\n");
+}
+
 async function seedDemo() {
   if (process.env.SEED_DEMO_DATA !== "yes") return;
-  if (process.env.APP_ENV === "production")
-    throw new Error("Demo data must never be seeded in production.");
+  if (process.env.APP_ENV === "production") throw new Error("Demo data must never be seeded in production.");
 
   // Unusable random password: nobody can log in as the demo landlord.
   const owner = await db.user.upsert({
@@ -68,11 +119,7 @@ async function seedDemo() {
       verificationStatus: p.verified ? ("VERIFIED" as const) : ("UNVERIFIED" as const),
       verificationScope: p.verificationScope,
     };
-    await db.property.upsert({
-      where: { slug: p.slug },
-      update: data,
-      create: { slug: p.slug, ownerId: owner.id, ...data },
-    });
+    await db.property.upsert({ where: { slug: p.slug }, update: data, create: { slug: p.slug, ownerId: owner.id, ...data } });
   }
 
   // SANDBOX ONLY: placeholder legal versions so consent and goal activation can be exercised locally.
@@ -81,13 +128,11 @@ async function seedDemo() {
     ["terms-and-conditions", "Terms and Conditions"],
     ["privacy-policy", "Privacy Policy"],
     ["rent-savings-agreement", "Rent Savings Agreement"],
+    ["landlord-agreement", "Landlord Agreement"],
+    ["agent-agreement", "Agent Agreement"],
   ] as const;
   for (const [slug, title] of docs) {
-    const doc = await db.legalDocument.upsert({
-      where: { slug },
-      update: {},
-      create: { slug, title },
-    });
+    const doc = await db.legalDocument.upsert({ where: { slug }, update: {}, create: { slug, title } });
     await db.legalDocumentVersion.upsert({
       where: { documentId_version: { documentId: doc.id, version: 1 } },
       update: {},
@@ -101,19 +146,16 @@ async function seedDemo() {
       },
     });
   }
+  await seedDemoAccounts();
   console.log("Demo data seeded.");
 }
 
 async function main() {
   if (process.env.APP_ENV === "production" && process.env.ALLOW_PRODUCTION_SEED !== "yes") {
-    throw new Error(
-      "Refusing to seed production. Set ALLOW_PRODUCTION_SEED=yes to override deliberately.",
-    );
+    throw new Error("Refusing to seed production. Set ALLOW_PRODUCTION_SEED=yes to override deliberately.");
   }
   if (!process.env.SEED_ADMIN_EMAIL && process.env.SEED_DEMO_DATA !== "yes") {
-    throw new Error(
-      "Nothing to do. Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD, and/or SEED_DEMO_DATA=yes.",
-    );
+    throw new Error("Nothing to do. Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD, and/or SEED_DEMO_DATA=yes.");
   }
   await seedAdmin();
   await seedDemo();

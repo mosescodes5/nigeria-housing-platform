@@ -9,8 +9,7 @@ import { RateLimiter } from "./rate-limit";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { loginSchema, registerSchema } from "./validation";
 
-export type FormState =
-  { error?: string; fieldErrors?: Record<string, string[] | undefined> } | undefined;
+export type FormState = { error?: string; fieldErrors?: Record<string, string[] | undefined> } | undefined;
 
 const registerLimiter = new RateLimiter(5, 60 * 60 * 1000);
 const loginLimiter = new RateLimiter(5, 15 * 60 * 1000);

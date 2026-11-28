@@ -30,8 +30,7 @@ if (existsSync("src")) walk("src");
 
 const errors = [];
 for (const v of used) {
-  if (!IGNORED.has(v) && !documented.has(v))
-    errors.push(`${v} is used in code but missing from .env.example`);
+  if (!IGNORED.has(v) && !documented.has(v)) errors.push(`${v} is used in code but missing from .env.example`);
 }
 for (const v of [...used, ...documented]) {
   if (v.startsWith("NEXT_PUBLIC_") && /(SECRET|PRIVATE|PASSWORD|TOKEN|KEY)/.test(v)) {

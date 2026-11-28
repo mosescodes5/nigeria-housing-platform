@@ -20,10 +20,7 @@ export const registerSchema = z.object({
     .trim()
     .optional()
     .transform((v) => (v ? v : undefined))
-    .refine(
-      (v) => v === undefined || normalizeNigerianPhone(v) !== null,
-      "Enter a valid Nigerian phone number",
-    )
+    .refine((v) => v === undefined || normalizeNigerianPhone(v) !== null, "Enter a valid Nigerian phone number")
     .transform((v) => (v === undefined ? undefined : normalizeNigerianPhone(v)!)),
   password: passwordSchema,
   role: z.enum(SELF_SERVICE_ROLES),

@@ -17,14 +17,7 @@ export function RegisterForm() {
   return (
     <form action={action} className="space-y-4" noValidate>
       <Field label="Full name" name="fullName" autoComplete="name" required errors={fe.fullName} />
-      <Field
-        label="Email"
-        name="email"
-        type="email"
-        autoComplete="email"
-        required
-        errors={fe.email}
-      />
+      <Field label="Email" name="email" type="email" autoComplete="email" required errors={fe.email} />
       <Field
         label="Phone (optional)"
         name="phone"

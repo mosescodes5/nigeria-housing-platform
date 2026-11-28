@@ -7,6 +7,9 @@ export const PERMISSIONS = [
   "property:favourite",
   "property:enquire",
   "property:moderate",
+  "business:review",
+  "listing:manage_own",
+  "application:submit",
   "savings:manage_own",
   "savings:view_any",
   "ledger:view_any",
@@ -17,14 +20,15 @@ export const PERMISSIONS = [
 export type Permission = (typeof PERMISSIONS)[number];
 
 const MATRIX: Record<Role, readonly Permission[]> = {
-  TENANT: ["property:browse", "property:favourite", "property:enquire", "savings:manage_own"],
-  BUYER: ["property:browse", "property:favourite", "property:enquire", "savings:manage_own"],
-  LANDLORD: ["property:browse", "property:create"],
-  AGENT: ["property:browse", "property:create"],
+  TENANT: ["property:browse", "property:favourite", "property:enquire", "application:submit", "savings:manage_own"],
+  BUYER: ["property:browse", "property:favourite", "property:enquire", "application:submit", "savings:manage_own"],
+  LANDLORD: ["property:browse", "property:create", "listing:manage_own"],
+  AGENT: ["property:browse", "property:create", "listing:manage_own"],
   SUPPORT: ["property:browse", "savings:view_any", "audit:view"],
   ADMIN: [
     "property:browse",
     "property:moderate",
+    "business:review",
     "savings:view_any",
     "ledger:view_any",
     "users:manage",

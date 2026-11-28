@@ -42,9 +42,7 @@ export function buildWhere(f: PropertyFilters): Prisma.PropertyWhereInput {
   return { listingStatus: "PUBLISHED", AND: and };
 }
 
-export function buildOrderBy(
-  sort: PropertyFilters["sort"],
-): Prisma.PropertyOrderByWithRelationInput {
+export function buildOrderBy(sort: PropertyFilters["sort"]): Prisma.PropertyOrderByWithRelationInput {
   if (sort === "price_asc") return { annualRentKobo: "asc" };
   if (sort === "price_desc") return { annualRentKobo: "desc" };
   return { createdAt: "desc" };

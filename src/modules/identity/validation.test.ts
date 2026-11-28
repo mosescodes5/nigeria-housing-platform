@@ -30,9 +30,7 @@ describe("registerSchema", () => {
 
   it("enforces the password policy", () => {
     expect(registerSchema.safeParse({ ...valid, password: "short1" }).success).toBe(false);
-    expect(registerSchema.safeParse({ ...valid, password: "onlylettersnodigits" }).success).toBe(
-      false,
-    );
+    expect(registerSchema.safeParse({ ...valid, password: "onlylettersnodigits" }).success).toBe(false);
   });
 
   it("allows phone to be omitted but rejects invalid numbers", () => {

@@ -18,13 +18,7 @@ describe("buildWhere", () => {
   });
 
   it("applies verified, availability and room filters", () => {
-    const w = buildWhere({
-      verifiedOnly: true,
-      availableOnly: true,
-      minBedrooms: 2,
-      minBathrooms: 1,
-      type: "STUDIO",
-    });
+    const w = buildWhere({ verifiedOnly: true, availableOnly: true, minBedrooms: 2, minBathrooms: 1, type: "STUDIO" });
     expect(w.AND).toEqual(
       expect.arrayContaining([
         { verificationStatus: "VERIFIED" },

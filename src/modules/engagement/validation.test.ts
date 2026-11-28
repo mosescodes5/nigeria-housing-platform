@@ -4,9 +4,7 @@ import { enquirySchema, makeViewingSchema } from "./validation";
 describe("enquirySchema", () => {
   it("requires a meaningful message", () => {
     expect(enquirySchema.safeParse({ message: "hi" }).success).toBe(false);
-    expect(
-      enquirySchema.safeParse({ message: "Is this still available for viewing?" }).success,
-    ).toBe(true);
+    expect(enquirySchema.safeParse({ message: "Is this still available for viewing?" }).success).toBe(true);
     expect(enquirySchema.safeParse({ message: "x".repeat(1001) }).success).toBe(false);
   });
 });

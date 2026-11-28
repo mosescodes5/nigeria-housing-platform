@@ -12,7 +12,6 @@
   registration refuses to run until the terms and privacy documents are published.
 
 ## Known gaps (tracked)
-
 - Email/phone verification and OTP (Phase 7 integrations); new users stay PENDING_VERIFICATION.
 - Password reset, MFA for privileged accounts, shared-store rate limiting, failed-login audit logging.
 - Admin bootstrap/seed script. Landlord and agent identity and authority-to-let checks (Phase 4).

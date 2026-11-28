@@ -1,0 +1,22 @@
+# Development database and workspace only. Never reuse these credentials elsewhere.
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
+    volumes:
+      - ..:/workspaces/nigeria-housing-platform:cached
+    command: sleep infinity
+    # Share the database container's network so the app reaches PostgreSQL at localhost:5432.
+    network_mode: service:db
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: housing_dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

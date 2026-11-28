@@ -26,6 +26,17 @@ describe("rbac", () => {
     }
   });
 
+  it("separates the landlord/agent portal, applications and admin review", () => {
+    expect(hasPermission("LANDLORD", "listing:manage_own")).toBe(true);
+    expect(hasPermission("AGENT", "listing:manage_own")).toBe(true);
+    expect(hasPermission("TENANT", "listing:manage_own")).toBe(false);
+    expect(hasPermission("TENANT", "application:submit")).toBe(true);
+    expect(hasPermission("LANDLORD", "application:submit")).toBe(false);
+    expect(hasPermission("LANDLORD", "business:review")).toBe(false);
+    expect(hasPermission("ADMIN", "business:review")).toBe(true);
+    expect(hasPermission("SUPPORT", "property:moderate")).toBe(false);
+  });
+
   it("requirePermission throws when forbidden", () => {
     expect(() => requirePermission("AGENT", "users:manage")).toThrow(/Forbidden/);
   });

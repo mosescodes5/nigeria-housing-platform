@@ -17,33 +17,14 @@ beforeAll(() => {
 
 async function setup() {
   const user = await db.user.create({
-    data: {
-      email: `t-${randomUUID()}@example.test`,
-      fullName: "Test User",
-      passwordHash: "x",
-      role: "TENANT",
-    },
+    data: { email: `t-${randomUUID()}@example.test`, fullName: "Test User", passwordHash: "x", role: "TENANT" },
   });
   const goal = await db.savingsGoal.create({
-    data: {
-      userId: user.id,
-      targetKobo: 300_000_000n,
-      targetDate: new Date(Date.UTC(2028, 0, 1)),
-      frequency: "MONTHLY",
-      status: "ACTIVE",
-    },
+    data: { userId: user.id, targetKobo: 300_000_000n, targetDate: new Date(Date.UTC(2028, 0, 1)), frequency: "MONTHLY", status: "ACTIVE" },
   });
   const deposit = async (amountNaira = 50_000) => {
-    await createSandboxDeposit({
-      userId: user.id,
-      goalId: goal.id,
-      amountNaira,
-      idempotencyKey: randomUUID(),
-    });
-    return db.contribution.findFirstOrThrow({
-      where: { goalId: goal.id },
-      orderBy: { createdAt: "desc" },
-    });
+    await createSandboxDeposit({ userId: user.id, goalId: goal.id, amountNaira, idempotencyKey: randomUUID() });
+    return db.contribution.findFirstOrThrow({ where: { goalId: goal.id }, orderBy: { createdAt: "desc" } });
   };
   return { user, goal, deposit };
 }
@@ -62,26 +43,17 @@ describe("contribution processing", () => {
     expect(await confirmContribution(c.providerReference)).toBe("already_processed");
     expect(await getConfirmedBalanceKobo(user.id)).toBe(5_000_000n);
 
-    const tx = await db.ledgerTransaction.findMany({
-      where: { reference: `contribution:${c.id}` },
-      include: { entries: true },
-    });
+    const tx = await db.ledgerTransaction.findMany({ where: { reference: `contribution:${c.id}` }, include: { entries: true } });
     expect(tx).toHaveLength(1);
-    const debit = tx[0]!.entries
-      .filter((e) => e.direction === "DEBIT")
-      .reduce((s, e) => s + e.amountKobo, 0n);
-    const credit = tx[0]!.entries
-      .filter((e) => e.direction === "CREDIT")
-      .reduce((s, e) => s + e.amountKobo, 0n);
+    const debit = tx[0]!.entries.filter((e) => e.direction === "DEBIT").reduce((s, e) => s + e.amountKobo, 0n);
+    const credit = tx[0]!.entries.filter((e) => e.direction === "CREDIT").reduce((s, e) => s + e.amountKobo, 0n);
     expect(debit).toBe(credit);
   });
 
   it("handles concurrent duplicate callbacks without double-crediting", async () => {
     const { user, deposit } = await setup();
     const c = await deposit(20_000);
-    const results = await Promise.allSettled(
-      Array.from({ length: 5 }, () => confirmContribution(c.providerReference)),
-    );
+    const results = await Promise.allSettled(Array.from({ length: 5 }, () => confirmContribution(c.providerReference)));
     expect(results.every((r) => r.status === "fulfilled")).toBe(true);
     expect(await getConfirmedBalanceKobo(user.id)).toBe(2_000_000n);
   });
@@ -105,18 +77,8 @@ describe("contribution processing", () => {
   it("deduplicates sandbox deposits with the same idempotency key", async () => {
     const { user, goal } = await setup();
     const key = randomUUID();
-    await createSandboxDeposit({
-      userId: user.id,
-      goalId: goal.id,
-      amountNaira: 5_000,
-      idempotencyKey: key,
-    });
-    await createSandboxDeposit({
-      userId: user.id,
-      goalId: goal.id,
-      amountNaira: 5_000,
-      idempotencyKey: key,
-    });
+    await createSandboxDeposit({ userId: user.id, goalId: goal.id, amountNaira: 5_000, idempotencyKey: key });
+    await createSandboxDeposit({ userId: user.id, goalId: goal.id, amountNaira: 5_000, idempotencyKey: key });
     expect(await db.contribution.count({ where: { goalId: goal.id } })).toBe(1);
   });
 
@@ -124,12 +86,7 @@ describe("contribution processing", () => {
     const { goal } = await setup();
     const other = await setup();
     await expect(
-      createSandboxDeposit({
-        userId: other.user.id,
-        goalId: goal.id,
-        amountNaira: 5_000,
-        idempotencyKey: randomUUID(),
-      }),
+      createSandboxDeposit({ userId: other.user.id, goalId: goal.id, amountNaira: 5_000, idempotencyKey: randomUUID() }),
     ).rejects.toThrow(PaymentError);
   });
 });

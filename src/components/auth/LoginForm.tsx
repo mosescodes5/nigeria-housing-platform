@@ -9,13 +9,7 @@ export function LoginForm() {
   return (
     <form action={action} className="space-y-4" noValidate>
       <Field label="Email" name="email" type="email" autoComplete="email" required />
-      <Field
-        label="Password"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        required
-      />
+      <Field label="Password" name="password" type="password" autoComplete="current-password" required />
       {state?.error ? (
         <p role="alert" className="text-sm text-red-600">
           {state.error}
